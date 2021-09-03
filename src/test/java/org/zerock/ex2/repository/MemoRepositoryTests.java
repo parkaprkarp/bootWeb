@@ -6,9 +6,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.ex2.entity.Memo;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -74,6 +78,42 @@ public class MemoRepositoryTests {
 
         Page<Memo> result = memoRepository.findAll(pageable);
 
-        System.out.println("페이지처: " +result);
+        System.out.println("페이지처리: " +result);
     }
+
+    @Test
+    public void testPageOrderBy() {
+        Sort sort = Sort.by("mno").descending();
+        Sort sort1 = Sort.by("memoText").ascending();
+        Sort sortAll = sort.and(sort1);
+
+//        Pageable pageable = PageRequest.of(0,10,sort);
+        Pageable pageable = PageRequest.of(0,10,sortAll);
+        Page<Memo> result = memoRepository.findAll(pageable);
+        result.get().forEach(memo -> System.out.println("내림차순 " + memo));
+    }
+
+    @Test
+    public void testQueryMethods() {
+        List<Memo> list = memoRepository.findByMnoBetweenOrderByMnoDesc(70L,80L);
+
+        for(Memo memo : list){
+            System.out.println("쿼리메소드 : "+ memo);
+        }
+    }
+
+    @Test
+    public void testQueryPageMethods() {
+        Pageable pageable = PageRequest.of(0,10,Sort.by("mno").descending());
+        Page<Memo> result = memoRepository.findByMnoBetween(10L,50L,pageable);
+        result.get().forEach(memo -> System.out.println("쿼레페이지메소드 " + memo));
+    }
+
+    @Commit //deleteBy인경우 select문으로 가져오기때문에 필수
+    @Transactional //deleteBy인경우 select문으로 가져오기때문에 필수
+    @Test
+    public void testDeleteQueryMethods(){
+        memoRepository.deleteMemoByMnoLessThan(10L); // 10보다 작은 데이터 삭제
+    }
+
 }
