@@ -74,6 +74,6 @@ public class MemoRepositoryTests {
 
         Page<Memo> result = memoRepository.findAll(pageable);
 
-        System.out.println("페이지처리 : " +result);
+        System.out.println("페이지처: " +result);
     }
 }
